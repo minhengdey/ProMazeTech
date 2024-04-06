@@ -2,6 +2,8 @@ package ProMazeTech.Controller;
 import ProMazeTech.Model.Maze;
 import ProMazeTech.Model.Cell;
 import ProMazeTech.interListener.ListenerStop;
+import javafx.animation.AnimationTimer;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.util.Pair;
 
 import java.util.ArrayDeque;
@@ -9,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class AlgorithmController {
-    public boolean finish = false;
     public ArrayList<Cell> getListNeighbour(Maze maze, int x, int y) {
         ArrayList<Cell> nextCellList = new ArrayList<>();
         if (x - 1 >= 0 && !maze.getMatrix()[x - 1][y].isVisitedPath() && !maze.getMatrix()[x][y].getWallLeft()) {
@@ -26,9 +27,9 @@ public class AlgorithmController {
         }
         return nextCellList;
     }
-    public void dfs(Maze maze, Pair<Integer, Integer> start, Pair<Integer, Integer> end) {
+    public void dfs(GraphicsContext graphicsContext, Maze maze, Pair<Integer, Integer> start, Pair<Integer, Integer> end, AnimationTimer timer, ListenerStop listenerStop) {
         if (maze.getMatrix()[start.getKey()][start.getValue()].isVisitedPath()) {
-            finish = true;
+            listenerStop.stopDrawPath(graphicsContext, maze, maze.getMatrix()[end.getKey()][end.getValue()], timer);
             return;
         }
         Stack<Cell> stack = new Stack<>();
@@ -43,7 +44,7 @@ public class AlgorithmController {
             if (!thisCell.isVisitedPath()) {
                 thisCell.setVisitedPath(true);
                 if (thisCell.getX() == end.getKey() && thisCell.getY() == end.getValue()) {
-                    finish = true;
+                    listenerStop.stopDrawPath(graphicsContext, maze, maze.getMatrix()[end.getKey()][end.getValue()], timer);
                     return;
                 }
                 ArrayList<Cell> neighbour = getListNeighbour(maze, thisCell.getX(), thisCell.getY());
@@ -56,9 +57,9 @@ public class AlgorithmController {
             }
         }
     }
-    public void bfs(Maze maze, Pair<Integer, Integer> start, Pair<Integer, Integer> end) {
+    public void bfs(GraphicsContext graphicsContext, Maze maze, Pair<Integer, Integer> start, Pair<Integer, Integer> end, AnimationTimer timer, ListenerStop listenerStop) {
         if (maze.getMatrix()[start.getKey()][start.getValue()].isVisitedPath()) {
-            finish = true;
+            listenerStop.stopDrawPath(graphicsContext, maze, maze.getMatrix()[end.getKey()][end.getValue()], timer);
             return;
         }
         ArrayDeque<Cell> queue = new ArrayDeque<>();
@@ -74,7 +75,7 @@ public class AlgorithmController {
             if (!thisCell.isVisitedPath()) {
                 thisCell.setVisitedPath(true);
                 if (thisCell.getX() == end.getKey() && thisCell.getY() == end.getValue()) {
-                    finish = true;
+                    listenerStop.stopDrawPath(graphicsContext, maze, maze.getMatrix()[end.getKey()][end.getValue()], timer);
                     return;
                 }
                 ArrayList<Cell> neighbour = getListNeighbour(maze, thisCell.getX(), thisCell.getY());

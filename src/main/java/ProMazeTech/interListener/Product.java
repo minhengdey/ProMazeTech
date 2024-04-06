@@ -6,50 +6,21 @@ import javafx.animation.AnimationTimer;
 import ProMazeTech.View.DisplayPath;
 import javafx.scene.canvas.GraphicsContext;
 
-import java.lang.reflect.GenericArrayType;
-
 public class Product {
     private GraphicsContext graphicsContext;
     private Maze maze;
     private Cell end;
-
-    public void setGraphicsContext(GraphicsContext graphicsContext) {
-        this.graphicsContext = graphicsContext;
-    }
-
-    public Maze getMaze() {
-        return maze;
-    }
-
-    public void setMaze(Maze maze) {
-        this.maze = maze;
-    }
-
-    public void setEnd(Cell end) {
-        this.end = end;
-    }
-
     private AnimationTimer timer;
-
-    public void setTimer(AnimationTimer timer) {
+    private ListenerStop listenerStop;
+    public Product(GraphicsContext graphicsContext, Maze maze, Cell end, AnimationTimer timer) {
+        this.graphicsContext = graphicsContext;
+        this.maze = maze;
+        this.end = end;
         this.timer = timer;
     }
 
-    private ListenerStop mListener;
-    public Product() {
-    }
-
-
-    public void setCheck(boolean check) {
-        if (!check) {
-            return;
-        }
-        if (this.mListener != null) {
-            this.mListener.stopDrawPath(graphicsContext, maze, end, timer);
-        }
-    }
-
-    public void setListener(ListenerStop mListener) {
-        this.mListener = mListener;
+    public ListenerStop setListener(ListenerStop mListener) {
+        this.listenerStop = mListener;
+        return mListener;
     }
 }

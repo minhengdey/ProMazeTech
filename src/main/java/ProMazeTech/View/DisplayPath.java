@@ -15,38 +15,12 @@ public class DisplayPath {
     AnimationTimer timer;
     Thread thread;
     AlgorithmController algorithmController = new AlgorithmController();
-    public void drawLine(GraphicsContext graphicsContext, Maze maze, Cell cell, Cell parCell) {
-        int cellSize = 400 / maze.getSize();
-        graphicsContext.setStroke(Color.RED);
-        if (cell.getX() == parCell.getX()) {
-            if (cell.getY() < parCell.getY()) {
-                graphicsContext.strokeLine(cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0, parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0);
-            } else {
-                graphicsContext.strokeLine(parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0, cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0);
-            }
-        } else {
-            if (cell.getX() < parCell.getX()) {
-                graphicsContext.strokeLine(cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0, parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0);
-            } else {
-                graphicsContext.strokeLine(parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0, cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0);
-            }
-        }
-    }
-    public void drawLinePath(GraphicsContext graphicsContext, Maze maze, Cell cell) {
-        Cell parCell = cell.getParent();
-        while (parCell != null) {
-            drawLine(graphicsContext, maze, cell, parCell);
-            cell = parCell;
-            parCell = cell.getParent();
-        }
-    }
     public void drawPath(GraphicsContext graphicsContext, Maze maze, Pair<Integer, Integer> start, Pair<Integer, Integer> end, String algorithm) {
         cellSize = 400 / maze.getSize();
         graphicsContext.setFill(Color.LIGHTPINK);
         timer = new AnimationTimer() {
             @Override
             public void handle(final long now) {
-                System.out.println("dsva");
                 for (int i = 0; i < maze.getSize(); ++i) {
                     for (int j = 0; j < maze.getSize(); ++j) {
                         if (maze.getMatrix()[j][i].isVisitedPath() && !start.equals(new Pair<>(j, i)) && !end.equals(new Pair<>(j, i))) {
@@ -71,38 +45,68 @@ public class DisplayPath {
         };
         if (algorithm.equals("BFS")) {
             thread = new Thread(() -> {
-                algorithmController.bfs(maze, start, end);
-                Product product = new Product();
-                product.setTimer(timer);
-                product.setGraphicsContext(graphicsContext);
-                product.setMaze(maze);
-                product.setEnd(maze.getMatrix()[end.getKey()][end.getValue()]);
-                product.setCheck(algorithmController.finish);
-                product.setListener(new ListenerStop() {
+                Product product = new Product(graphicsContext, maze, maze.getMatrix()[end.getKey()][end.getValue()], timer);
+                algorithmController.bfs(graphicsContext, maze, start, end, timer, product.setListener(new ListenerStop() {
                     @Override
-                    public void stopDrawPath(GraphicsContext graphicsContext, Maze maze, Cell end, AnimationTimer timer) {
+                    public void stopDrawPath(GraphicsContext graphicsContext, Maze maze, Cell cell, AnimationTimer timer) {
+                        Cell parCell = cell.getParent();
+                        while (parCell != null) {
+                            int cellSize = 400 / maze.getSize();
+                            graphicsContext.setStroke(Color.BLACK);
+                            if (cell.getX() == parCell.getX()) {
+                                if (cell.getY() < parCell.getY()) {
+                                    graphicsContext.strokeLine(cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0, parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0);
+                                } else {
+                                    graphicsContext.strokeLine(parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0, cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0);
+                                }
+                            } else {
+                                if (cell.getX() < parCell.getX()) {
+                                    graphicsContext.strokeLine(cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0, parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0);
+                                } else {
+                                    graphicsContext.strokeLine(parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0, cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0);
+                                }
+                            }
+                            cell = parCell;
+                            parCell = cell.getParent();
+                        }
+                        graphicsContext.setFill(Color.RED);
+                        graphicsContext.fillRect(start.getKey() * cellSize, start.getValue() * cellSize, cellSize, cellSize);
+                        graphicsContext.fillRect(end.getKey() * cellSize, end.getValue() * cellSize, cellSize, cellSize);
                         timer.stop();
-                        drawLinePath(graphicsContext, maze, end);
                     }
-                });
+                }));
             });
         } else if (algorithm.equals("DFS")) {
             thread = new Thread(() -> {
-                algorithmController.dfs(maze, start, end);
-                Product product = new Product();
-                product.setTimer(timer);
-                product.setGraphicsContext(graphicsContext);
-                product.setMaze(maze);
-                product.setEnd(maze.getMatrix()[end.getKey()][end.getValue()]);
-                product.setCheck(algorithmController.finish);
-                System.out.println(algorithmController.finish);
-                product.setListener(new ListenerStop() {
+                Product product = new Product(graphicsContext, maze, maze.getMatrix()[end.getKey()][end.getValue()], timer);
+                algorithmController.dfs(graphicsContext, maze, start, end, timer, product.setListener(new ListenerStop() {
                     @Override
-                    public void stopDrawPath(GraphicsContext graphicsContext, Maze maze, Cell end, AnimationTimer timer) {
+                    public void stopDrawPath(GraphicsContext graphicsContext, Maze maze, Cell cell, AnimationTimer timer) {
+                        Cell parCell = cell.getParent();
+                        while (parCell != null) {
+                            graphicsContext.setStroke(Color.BLACK);
+                            if (cell.getX() == parCell.getX()) {
+                                if (cell.getY() < parCell.getY()) {
+                                    graphicsContext.strokeLine(cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0, parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0);
+                                } else {
+                                    graphicsContext.strokeLine(parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0, cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0);
+                                }
+                            } else {
+                                if (cell.getX() < parCell.getX()) {
+                                    graphicsContext.strokeLine(cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0, parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0);
+                                } else {
+                                    graphicsContext.strokeLine(parCell.getX() * cellSize + cellSize / 2.0, parCell.getY() * cellSize + cellSize / 2.0, cell.getX() * cellSize + cellSize / 2.0, cell.getY() * cellSize + cellSize / 2.0);
+                                }
+                            }
+                            cell = parCell;
+                            parCell = cell.getParent();
+                        }
+                        graphicsContext.setFill(Color.RED);
+                        graphicsContext.fillRect(start.getKey() * cellSize, start.getValue() * cellSize, cellSize, cellSize);
+                        graphicsContext.fillRect(end.getKey() * cellSize, end.getValue() * cellSize, cellSize, cellSize);
                         timer.stop();
-                        drawLinePath(graphicsContext, maze, end);
                     }
-                });
+                }));
             });
         }
         timer.start();
